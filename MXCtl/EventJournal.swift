@@ -25,18 +25,18 @@ struct JournalEvent: Codable, Identifiable, Equatable {
 
     var title: String {
         switch kind {
-        case .macSleep: return "Mac уснул"
-        case .macWake: return "Mac проснулся"
-        case .screensSleep: return "Экран погас"
-        case .screensWake: return "Экран включился"
-        case .screenLocked: return "Экран заблокирован"
-        case .screenUnlocked: return "Экран разблокирован"
-        case .connected: return "Подключено"
-        case .disconnected: return "Отключено"
-        case .battery: return "Заряд \(percent ?? 0)%" + (charging == true ? ", заряжается" : "")
-        case .deviceMessage: return "Сообщение устройства: \(detail ?? "")"
-        case .appStarted: return "MXCtl запущен"
-        case .backlight: return "Подсветка \(detail ?? "")"
+        case .macSleep: return String(localized: "Mac уснул")
+        case .macWake: return String(localized: "Mac проснулся")
+        case .screensSleep: return String(localized: "Экран погас")
+        case .screensWake: return String(localized: "Экран включился")
+        case .screenLocked: return String(localized: "Экран заблокирован")
+        case .screenUnlocked: return String(localized: "Экран разблокирован")
+        case .connected: return String(localized: "Подключено")
+        case .disconnected: return String(localized: "Отключено")
+        case .battery: return charging == true ? String(localized: "Заряд \(percent ?? 0)%, заряжается") : String(localized: "Заряд \(percent ?? 0)%")
+        case .deviceMessage: return String(localized: "Сообщение устройства: \(detail ?? "")")
+        case .appStarted: return String(localized: "MXCtl запущен")
+        case .backlight: return String(localized: "Подсветка \(detail ?? "")")
         }
     }
 }
@@ -252,7 +252,17 @@ final class EventJournal: ObservableObject {
 /// One bar of the battery chart (as in iPhone's battery settings): the charge at the end of a time
 /// slot, and whether it was charging during it.
 struct BatteryBar: Identifiable, Equatable {
-    enum State: String, Hashable { case normal = "Разряд", charging = "Зарядка", low = "Ниже 20%" }
+    enum State: Hashable {
+        case normal, charging, low
+
+        var title: String {
+            switch self {
+            case .normal: return String(localized: "Разряд")
+            case .charging: return String(localized: "Зарядка")
+            case .low: return String(localized: "Ниже 20%")
+            }
+        }
+    }
 
     let start: Date
     let percent: Int

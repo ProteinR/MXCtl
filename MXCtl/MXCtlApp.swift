@@ -35,9 +35,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(ConfigStore.shared)
                 .environmentObject(Permissions.shared))
         } menuItems: {
-            let settings = NSMenuItem(title: "Настройки…", action: #selector(AppDelegate.openSettings), keyEquivalent: ",")
+            let settings = NSMenuItem(title: String(localized: "Настройки…"), action: #selector(AppDelegate.openSettings), keyEquivalent: ",")
             settings.target = self
-            let report = NSMenuItem(title: "Сообщить об ошибке…", action: #selector(AppDelegate.reportBug), keyEquivalent: "")
+            let report = NSMenuItem(title: String(localized: "Сообщить об ошибке…"), action: #selector(AppDelegate.reportBug), keyEquivalent: "")
             report.target = self
             return [settings, report]
         }
@@ -64,9 +64,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
                 for device in DeviceManager.shared.devices where device.hasBacklight {
                     Task {
-                        _ = await device.setBacklight(enabled: false, reason: "тест")
+                        _ = await device.setBacklight(enabled: false, reason: String(localized: "тест"))
                         try? await Task.sleep(for: .seconds(4))
-                        _ = await device.setBacklight(enabled: true, reason: "тест")
+                        _ = await device.setBacklight(enabled: true, reason: String(localized: "тест"))
                     }
                 }
             }
@@ -75,6 +75,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if CommandLine.arguments.contains("--open-settings") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { SettingsWindow.shared.show() }
         }
+        AppLanguage.reopenSettingsIfRestarted()
         if CommandLine.arguments.contains("--panel-test") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { self.statusItem?.runPanelTest() }
         }
@@ -125,7 +126,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let took = (CACurrentMediaTime() - start) * 1000
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     Log.info(String(format: "Stress round %d: %@%@ opened in %.0f ms, footprint %@ MB", cycle, tab,
-                                    tab == "Кнопки" ? (mouse ? " (мышь)" : " (клавиатура)") : "", took, Self.footprintMB()), "stress")
+                                    tab == "Кнопки" ? (mouse ? " (мышь)" : " (клавиатура)") : "", took, Self.footprintMB()), "stress")  // no-l10n
                     MainActor.assumeIsolated { SettingsWindow.shared.close() }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { MainActor.assumeIsolated { settings() } }
                 }
@@ -140,7 +141,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private static let stressPages: [(String, Bool)] = [("Кнопки", false), ("Кнопки", true), ("Батарея", false), ("Прокрутка", false), ("Мышь", false), ("Общие", false)]
+    private static let stressPages: [(String, Bool)] = [("Кнопки", false), ("Кнопки", true), ("Батарея", false), ("Прокрутка", false), ("Мышь", false), ("Общие", false)]  // no-l10n
 
     /// The memory footprint, as Activity Monitor shows it.
     static func footprintMB() -> String {

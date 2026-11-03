@@ -58,7 +58,7 @@ final class DeviceManager: ObservableObject {
         let workspace = NSWorkspace.shared.notificationCenter
         for name in [NSWorkspace.screensDidSleepNotification, NSWorkspace.willSleepNotification] {
             workspace.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
-                MainActor.assumeIsolated { self?.macSleeps(notification.name == NSWorkspace.willSleepNotification ? "Mac уснул" : "экран погас") }
+                MainActor.assumeIsolated { self?.macSleeps(notification.name == NSWorkspace.willSleepNotification ? String(localized: "Mac уснул") : String(localized: "экран погас")) }
             }
         }
         for name in [NSWorkspace.screensDidWakeNotification, NSWorkspace.didWakeNotification] {
@@ -153,7 +153,7 @@ final class DeviceManager: ObservableObject {
     private func restoreBacklight(_ device: LogiDevice) {
         guard !macAsleep, backlightOffForSleep.contains(device.identity) else { return }
         Task {
-            if await device.setBacklight(enabled: true, reason: "Mac проснулся") {
+            if await device.setBacklight(enabled: true, reason: String(localized: "Mac проснулся")) {
                 backlightOffForSleep.remove(device.identity)
                 Log.info("\(device.name): backlight back on", "backlight")
             }

@@ -191,8 +191,9 @@ struct BacklightConfig: Equatable {
 
     /// "вкл, авто, уровень 4, гаснет через 30 с".
     var summary: String {
-        guard enabled else { return "выключена" }
-        let mode = isAutomatic ? "авто по датчику света" : self.mode == 3 ? "ручной режим" : "режим \(self.mode)"
-        return "включена, \(mode), уровень \(level), гаснет через \(handsOut * 5) с"
+        guard enabled else { return String(localized: "выключена") }
+        let mode = isAutomatic ? String(localized: "авто по датчику света")
+            : self.mode == 3 ? String(localized: "ручной режим") : String(localized: "режим \(self.mode)")
+        return String(localized: "включена, \(mode), уровень \(level), гаснет через \(handsOut * 5) с")
     }
 }

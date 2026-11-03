@@ -56,7 +56,7 @@ final class StatusItemController: NSObject {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         self.content = content
         self.menuItems = menuItems
-        quitTitle = "Завершить \(title)"
+        quitTitle = String(localized: "Завершить \(title)")
         super.init()
         statusItem.behavior = .removalAllowed
         MenuBarIcon.shared.attach(statusItem)

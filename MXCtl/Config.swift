@@ -32,13 +32,13 @@ enum SystemAction: String, Codable, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .missionControl: return "Mission Control"
-        case .appExpose: return "Окна приложения (App Exposé)"
-        case .showDesktop: return "Показать рабочий стол"
-        case .desktopLeft: return "Рабочий стол слева"
-        case .desktopRight: return "Рабочий стол справа"
-        case .launchpad: return "Приложения (Launchpad)"
-        case .micMute: return "Микрофон вкл/выкл"
-        case .lockScreen: return "Заблокировать экран"
+        case .appExpose: return String(localized: "Окна приложения (App Exposé)")
+        case .showDesktop: return String(localized: "Показать рабочий стол")
+        case .desktopLeft: return String(localized: "Рабочий стол слева")
+        case .desktopRight: return String(localized: "Рабочий стол справа")
+        case .launchpad: return String(localized: "Приложения (Launchpad)")
+        case .micMute: return String(localized: "Микрофон вкл/выкл")
+        case .lockScreen: return String(localized: "Заблокировать экран")
         }
     }
 }
@@ -53,16 +53,16 @@ enum MediaAction: Int, Codable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .volumeUp: return "Громче"
-        case .volumeDown: return "Тише"
-        case .mute: return "Выключить звук"
-        case .brightnessUp: return "Яркость +"
-        case .brightnessDown: return "Яркость −"
-        case .playPause: return "Пауза / воспроизведение"
-        case .next: return "Следующий трек"
-        case .previous: return "Предыдущий трек"
-        case .keyboardLightUp: return "Подсветка клавиатуры +"
-        case .keyboardLightDown: return "Подсветка клавиатуры −"
+        case .volumeUp: return String(localized: "Громче")
+        case .volumeDown: return String(localized: "Тише")
+        case .mute: return String(localized: "Выключить звук")
+        case .brightnessUp: return String(localized: "Яркость +")
+        case .brightnessDown: return String(localized: "Яркость −")
+        case .playPause: return String(localized: "Пауза / воспроизведение")
+        case .next: return String(localized: "Следующий трек")
+        case .previous: return String(localized: "Предыдущий трек")
+        case .keyboardLightUp: return String(localized: "Подсветка клавиатуры +")
+        case .keyboardLightDown: return String(localized: "Подсветка клавиатуры −")
         }
     }
 }
@@ -86,14 +86,16 @@ enum Action: Codable, Hashable {
 
     var title: String {
         switch self {
-        case .native: return "По умолчанию"
-        case .nothing: return "Ничего"
-        case .keystroke(let keystroke): return "Нажать \(keystroke.title)"
+        case .native: return String(localized: "По умолчанию")
+        case .nothing: return String(localized: "Ничего")
+        case .keystroke(let keystroke): return String(localized: "Нажать \(keystroke.title)")
         case .system(let action): return action.title
         case .media(let action): return action.title
-        case .openApp(let path): return "Открыть \(FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: ""))"
-        case .openURL(let url): return "Ссылка \(url)"
-        case .shortcut(let name): return "Команда «\(name)»"
+        case .openApp(let path):
+            let app = FileManager.default.displayName(atPath: path).replacingOccurrences(of: ".app", with: "")
+            return String(localized: "Открыть \(app)")
+        case .openURL(let url): return String(localized: "Ссылка \(url)")
+        case .shortcut(let name): return String(localized: "Команда «\(name)»")
         case .shell(let command): return "Shell: \(command)"
         }
     }
@@ -143,10 +145,10 @@ enum SwipeDirection: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .up: return "Свайп вверх"
-        case .down: return "Свайп вниз"
-        case .left: return "Свайп влево"
-        case .right: return "Свайп вправо"
+        case .up: return String(localized: "Свайп вверх")
+        case .down: return String(localized: "Свайп вниз")
+        case .left: return String(localized: "Свайп влево")
+        case .right: return String(localized: "Свайп вправо")
         }
     }
 }

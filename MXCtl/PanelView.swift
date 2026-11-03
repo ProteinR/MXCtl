@@ -64,7 +64,7 @@ struct PanelView: View {
     }
 
     @ViewBuilder
-    private func warning(_ title: String, _ detail: String, button: String?, action: @escaping () -> Void) -> some View {
+    private func warning(_ title: LocalizedStringKey, _ detail: LocalizedStringKey, button: LocalizedStringKey?, action: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)

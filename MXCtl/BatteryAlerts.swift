@@ -37,9 +37,15 @@ enum BatteryAlerts {
         }
         guard let level = result.show else { return }
         Log.info("\(device): battery \(percent)% → \(level == .critical ? "critical" : "low") warning", "battery")
-        notify(title: "\(device): осталось \(percent)%",
-               body: level == .critical ? "Скоро выключится — поставьте на зарядку." : "Пора зарядить.",
-               level: level)
+        notify(title: title(device: device, percent: percent), body: body(level), level: level)
+    }
+
+    static func title(device: String, percent: Int) -> String {
+        String(localized: "\(device): осталось \(percent)%")
+    }
+
+    static func body(_ level: BatteryAlertRule.Level) -> String {
+        level == .critical ? String(localized: "Скоро выключится — поставьте на зарядку.") : String(localized: "Пора зарядить.")
     }
 
     /// `level` picks the battery picture (scripts/make-battery.swift).

@@ -3,7 +3,7 @@ import SwiftUI
 /// A settings card whose whole header row toggles it: icon, title, a one-line summary of the current
 /// values, and a rotating chevron. Replaces `DisclosureGroup`, where only the tiny arrow was clickable.
 struct CollapsibleSection<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     var summary: String?
     @Binding var isExpanded: Bool

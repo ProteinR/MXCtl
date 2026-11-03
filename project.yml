@@ -1,14 +1,14 @@
 name: MXCtl
 options:
   bundleIdPrefix: com.dmemruk
-  developmentLanguage: ru
+  developmentLanguage: en
   deploymentTarget:
     macOS: "15.0"
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.1.22"
-    CURRENT_PROJECT_VERSION: "23"
+    MARKETING_VERSION: "0.1.23"
+    CURRENT_PROJECT_VERSION: "24"
     # No Apple Developer account: ad-hoc signing, no hardened runtime (scripts/install.sh re-signs
     # with the local certificate so Accessibility and Input Monitoring survive rebuilds).
     DEVELOPMENT_TEAM: ""
@@ -16,6 +16,8 @@ settings:
     CODE_SIGN_IDENTITY: "-"
     ENABLE_HARDENED_RUNTIME: NO
     MACOSX_DEPLOYMENT_TARGET: "15.0"
+    # Lists the localizable strings per file (.stringsdata) for scripts/check-strings.py.
+    SWIFT_EMIT_LOC_STRINGS: YES
 targets:
   MXCtl:
     type: application
@@ -32,8 +34,10 @@ targets:
       path: MXCtl/Info.plist
       properties:
         CFBundleDisplayName: MXCtl
-        CFBundleDevelopmentRegion: ru
-        CFBundleLocalizations: [ru]
+        # Strings are Russian in the code and translated in en.lproj; English is the fallback
+        # for any other system language.
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, ru]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.utilities

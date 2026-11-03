@@ -9,7 +9,7 @@ enum BugReport {
 
     @MainActor
     static func compose() {
-        let subject = "MXCtl \(AppDelegate.appVersion): ошибка / bug report"
+        let subject = "MXCtl \(AppDelegate.appVersion): ошибка / bug report"  // no-l10n
         let body = text()
         let logs = [Log.fileURL, Log.fileURL.deletingLastPathComponent().appendingPathComponent("mxctl.1.log")]
             .filter { FileManager.default.fileExists(atPath: $0.path) }
@@ -24,7 +24,7 @@ enum BugReport {
         components.scheme = "mailto"
         components.path = address
         components.queryItems = [URLQueryItem(name: "subject", value: subject),
-                                 URLQueryItem(name: "body", value: body + "\n(Приложите, пожалуйста, лог: он открыт в Finder.)")]
+                                 URLQueryItem(name: "body", value: body + "\n" + String(localized: "(Приложите, пожалуйста, лог: он открыт в Finder.)"))]
         if let url = components.url { NSWorkspace.shared.open(url) }
         if !logs.isEmpty { NSWorkspace.shared.activateFileViewerSelecting(logs) }
         Log.info("Bug report: mailto link opened, log shown in Finder")

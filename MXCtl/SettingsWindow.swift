@@ -22,7 +22,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
             // every scroll frame made scrolling jerky (seen in Time Profiler).
             host.sizingOptions = []
             let window = NSWindow(contentViewController: host)
-            window.title = "MXCtl — настройки"
+            window.title = String(localized: "MXCtl — настройки")
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             window.isReleasedWhenClosed = false
             window.delegate = self
@@ -125,8 +125,18 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
 }
 
 private enum SettingsTab: String, CaseIterable, Identifiable {
-    case buttons = "Кнопки", scroll = "Прокрутка", mouse = "Мышь", battery = "Батарея", general = "Общие"
+    case buttons = "Кнопки", scroll = "Прокрутка", mouse = "Мышь", battery = "Батарея", general = "Общие"  // no-l10n
     var id: String { rawValue }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .buttons: return "Кнопки"
+        case .scroll: return "Прокрутка"
+        case .mouse: return "Мышь"
+        case .battery: return "Батарея"
+        case .general: return "Общие"
+        }
+    }
 }
 
 /// Tabs are a segmented control above the page, not a `TabView`: the AppKit tab view asked every
@@ -141,7 +151,7 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .safeAreaInset(edge: .top, spacing: 0) {
                 Picker("", selection: $tab) {
-                    ForEach(SettingsTab.allCases) { Text($0.rawValue).tag($0) }
+                    ForEach(SettingsTab.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -270,7 +280,8 @@ private struct ButtonsTab: View {
     /// "Изменено: F8 (скриншот)", or that all are by default.
     private func summary(_ device: LogiDevice) -> String {
         let changed = device.divertable.filter { KnownControl.isChanged($0.cid, store.binding($0.cid)) }.map { KnownControl.name($0.cid) }
-        return changed.isEmpty ? "\(device.divertable.count) кнопок, все по умолчанию" : "Изменено: " + changed.joined(separator: ", ")
+        return changed.isEmpty ? String(localized: "\(device.divertable.count) кнопок, все по умолчанию")
+            : String(localized: "Изменено: \(changed.joined(separator: ", "))")
     }
 
     /// Controls with a binding in the config that no connected device has.
@@ -388,7 +399,7 @@ private struct DevicePicture: View {
             let action = store.binding(cid)
             return KnownControl.name(cid) + (KnownControl.isChanged(cid, action) ? " — \(action.click.title)" : "")
         case .thumbWheel:
-            return "Боковое колесо"
+            return String(localized: "Боковое колесо")
         }
     }
 }
@@ -406,7 +417,7 @@ private struct DeviceList: View {
             }
             let fixed = device.controls.filter { !$0.isDivertable && !$0.isVirtual && KnownControl.names[$0.cid] != nil }
             if !fixed.isEmpty {
-                Text("Нельзя переназначить (их обрабатывает само устройство): " + fixed.map { KnownControl.name($0.cid) }.joined(separator: ", "))
+                Text("Нельзя переназначить (их обрабатывает само устройство): \(fixed.map { KnownControl.name($0.cid) }.joined(separator: ", "))")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -450,11 +461,16 @@ private struct ControlRow: View {
                         Text(direction.title).foregroundStyle(.secondary).padding(.leading, 16)
                         Spacer()
                         ActionEditor(action: binding(path(direction)), defaultAction: factory.swipe(direction),
-                                     defaultTitle: (factory.swipe(direction) == .native ? "Ничего" : factory.swipe(direction).title) + " — по умолчанию")
+                                     defaultTitle: Self.defaultTitle(factory.swipe(direction)))
                     }
                 }
             }
         }
+    }
+
+    private static func defaultTitle(_ action: Action) -> String {
+        let name = action == .native ? String(localized: "Ничего") : action.title
+        return String(localized: "\(name) — по умолчанию")
     }
 
     private func path(_ direction: SwipeDirection) -> WritableKeyPath<ButtonBinding, Action> {
@@ -502,7 +518,7 @@ private struct ScrollTab: View {
         .formStyle(.grouped)
     }
 
-    private func slider(_ title: String, _ help: String, value: Binding<Double>, range: ClosedRange<Double>, format: String) -> some View {
+    private func slider(_ title: LocalizedStringKey, _ help: LocalizedStringKey, value: Binding<Double>, range: ClosedRange<Double>, format: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
                 Text(title)
@@ -568,6 +584,7 @@ private struct GeneralTab: View {
     var body: some View {
         Form {
             Section {
+                LanguagePicker()
                 LoginItemToggle()
                 MenuBarIconToggle()
             }

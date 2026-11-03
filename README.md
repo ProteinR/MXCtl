@@ -15,7 +15,7 @@ It talks to the devices directly over Bluetooth with Logitech's HID++ 2.0 protoc
 Options+ does, so keys and buttons are taken over on the device itself instead of being guessed
 from ordinary key presses.
 
-The interface is in Russian.
+The interface is in English or Russian: the system language by default, or chosen in Settings → General.
 
 ## Features
 

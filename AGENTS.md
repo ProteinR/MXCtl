@@ -122,6 +122,14 @@ Mos was removed from the login items on 2026-10-19; Options+ was removed the sam
 The settings window is forced to the front (`activate(ignoringOtherApps:)` + `orderFrontRegardless`):
 a menu bar app's plain `activate()` may be refused and the window opened behind other apps.
 
+Interface languages: Russian and English. Strings are written in Russian in the code (SwiftUI
+literals, `String(localized:)`); `MXCtl/Resources/en.lproj/Localizable.strings` translates them
+(Russian keys). English is the development region, so any system language other than Russian gets
+English. Общие → Язык (`Language.swift`) writes the app's own `AppleLanguages` (none = system) and
+restarts MXCtl. After changing any user-visible string, build and run `scripts/check-strings.py`:
+it compares the compiler's list of localizable strings (`.stringsdata`) with en.lproj and finds
+Russian literals that are not localizable (mark intended ones, like IDs, with `// no-l10n`).
+
 Build and install: `scripts/install.sh`. Tests: `scripts/test.sh`. Icon: `scripts/make-icon.swift`.
 Log: `~/Library/Logs/MXCtl/mxctl.log`. Versions: pre-commit hook as in MonitorCtl
 (`git config core.hooksPath scripts/git-hooks`).

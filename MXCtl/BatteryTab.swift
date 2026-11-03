@@ -13,7 +13,7 @@ struct BatteryTab: View {
 
     private var journalSummary: String {
         let today = journal.recent.filter { Calendar.current.isDateInToday($0.time) }.count
-        return "Сегодня событий: \(today)"
+        return String(localized: "Сегодня событий: \(today)")
     }
 
     private var offlineDevices: [String] {
@@ -60,10 +60,10 @@ struct BatteryTab: View {
                     .font(.caption).foregroundStyle(.secondary)
                 HStack {
                     Button("Пример: 15%") {
-                        BatteryAlerts.notify(title: "MX Master 3S: осталось 15%", body: "Пора зарядить.", level: .warning)
+                        BatteryAlerts.notify(title: BatteryAlerts.title(device: "MX Master 3S", percent: 15), body: BatteryAlerts.body(.warning), level: .warning)
                     }
                     Button("Пример: 5%") {
-                        BatteryAlerts.notify(title: "MX Master 3S: осталось 5%", body: "Скоро выключится — поставьте на зарядку.", level: .critical)
+                        BatteryAlerts.notify(title: BatteryAlerts.title(device: "MX Master 3S", percent: 5), body: BatteryAlerts.body(.critical), level: .critical)
                     }
                 }
             }
@@ -131,7 +131,7 @@ private struct BatterySection: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(lastFullText).font(.callout)
                     if let rate = drainPerDay(history) {
-                        Text(String(format: "Расход ~%.1f%% в день", rate) + (remainingDays(rate).map { ", хватит на ~\($0) дн." } ?? ""))
+                        Text(String(format: String(localized: "Расход ~%.1f%% в день"), rate) + (remainingDays(rate).map { String(localized: ", хватит на ~\($0) дн.") } ?? ""))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -155,9 +155,9 @@ private struct BatterySection: View {
     }
 
     private var lastFullText: String {
-        guard let date = journal.lastFullCharge[name] else { return "Полная зарядка: ещё не было" }
+        guard let date = journal.lastFullCharge[name] else { return String(localized: "Полная зарядка: ещё не было") }
         let relative = date.formatted(.relative(presentation: .named))
-        return "Полная зарядка: \(date.formatted(.dateTime.day().month(.wide).hour().minute())) (\(relative))"
+        return String(localized: "Полная зарядка: \(date.formatted(.dateTime.day().month(.wide).hour().minute())) (\(relative))")
     }
 
     /// Percent per day over the current discharge (since the last charging stopped).
@@ -211,7 +211,7 @@ private struct BatteryChart: View {
                 ForEach([BatteryBar.State.normal, .charging, .low], id: \.self) { state in
                     HStack(spacing: 5) {
                         Capsule().fill(Self.color(state)).frame(width: 14, height: 3)
-                        Text(state.rawValue).font(.caption).foregroundStyle(.secondary)
+                        Text(state.title).font(.caption).foregroundStyle(.secondary)
                     }
                 }
             }

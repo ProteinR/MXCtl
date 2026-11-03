@@ -8,7 +8,7 @@ struct ActionEditor: View {
     /// What "по умолчанию" means for this button: the device's own (`.native`) or Logitech's
     /// default that MXCtl performs (the mic key). Not listed twice.
     var defaultAction: Action = .native
-    var defaultTitle = "По умолчанию"
+    var defaultTitle = String(localized: "По умолчанию")
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -16,7 +16,7 @@ struct ActionEditor: View {
             // for every row at once and the settings list scrolled jerkily.
             Menu {
                 item(defaultTitle, defaultAction)
-                if defaultAction != .nothing { item("Ничего не делать", .nothing) }
+                if defaultAction != .nothing { item(String(localized: "Ничего не делать"), .nothing) }
                 Divider()
                 Button("Сочетание клавиш…") { select("keystroke") }
                 Divider()
@@ -49,15 +49,15 @@ struct ActionEditor: View {
     private var menuTitle: String {
         if action == defaultAction { return defaultTitle }
         switch action {
-        case .native: return "Своё действие устройства"
-        case .nothing: return "Ничего не делать"
-        case .keystroke: return "Сочетание клавиш"
+        case .native: return String(localized: "Своё действие устройства")
+        case .nothing: return String(localized: "Ничего не делать")
+        case .keystroke: return String(localized: "Сочетание клавиш")
         case .system(let system): return system.title
         case .media(let media): return media.title
-        case .openApp: return "Открыть приложение"
-        case .openURL: return "Открыть ссылку"
-        case .shortcut: return "Команда Shortcuts"
-        case .shell: return "Shell-команда"
+        case .openApp: return String(localized: "Открыть приложение")
+        case .openURL: return String(localized: "Открыть ссылку")
+        case .shortcut: return String(localized: "Команда Shortcuts")
+        case .shell: return String(localized: "Shell-команда")
         }
     }
 
@@ -72,7 +72,7 @@ struct ActionEditor: View {
             }
         case .openApp(let path):
             HStack {
-                Text(path.isEmpty ? "Приложение не выбрано" : FileManager.default.displayName(atPath: path))
+                Text(path.isEmpty ? String(localized: "Приложение не выбрано") : FileManager.default.displayName(atPath: path))
                     .foregroundStyle(path.isEmpty ? .secondary : .primary)
                 Button("Выбрать…") {
                     let panel = NSOpenPanel()
@@ -92,7 +92,7 @@ struct ActionEditor: View {
         }
     }
 
-    private func field(_ prompt: String, _ value: String, set: @escaping (String) -> Void) -> some View {
+    private func field(_ prompt: LocalizedStringKey, _ value: String, set: @escaping (String) -> Void) -> some View {
         TextField(prompt, text: Binding(get: { value }, set: set))
             .textFieldStyle(.roundedBorder)
             .frame(maxWidth: 280)
@@ -137,7 +137,7 @@ struct ShortcutRecorder: View {
     @State private var monitor: Any?
 
     var body: some View {
-        Button(recording ? "Нажмите сочетание…" : keystroke.title) {
+        Button(recording ? String(localized: "Нажмите сочетание…") : keystroke.title) {
             recording ? stop() : start()
         }
         .frame(minWidth: 120)
@@ -166,7 +166,7 @@ struct ShortcutRecorder: View {
 
     private static let specialKeys: [Int: String] = [
         kVK_LeftArrow: "←", kVK_RightArrow: "→", kVK_UpArrow: "↑", kVK_DownArrow: "↓",
-        kVK_Space: "Пробел", kVK_Return: "↩", kVK_Tab: "⇥", kVK_Delete: "⌫", kVK_ForwardDelete: "⌦",
+        kVK_Space: String(localized: "Пробел"), kVK_Return: "↩", kVK_Tab: "⇥", kVK_Delete: "⌫", kVK_ForwardDelete: "⌦",
         kVK_Home: "↖", kVK_End: "↘", kVK_PageUp: "⇞", kVK_PageDown: "⇟",
         kVK_F1: "F1", kVK_F2: "F2", kVK_F3: "F3", kVK_F4: "F4", kVK_F5: "F5", kVK_F6: "F6",
         kVK_F7: "F7", kVK_F8: "F8", kVK_F9: "F9", kVK_F10: "F10", kVK_F11: "F11", kVK_F12: "F12",
