@@ -125,3 +125,10 @@ a menu bar app's plain `activate()` may be refused and the window opened behind 
 Build and install: `scripts/install.sh`. Tests: `scripts/test.sh`. Icon: `scripts/make-icon.swift`.
 Log: `~/Library/Logs/MXCtl/mxctl.log`. Versions: pre-commit hook as in MonitorCtl
 (`git config core.hooksPath scripts/git-hooks`).
+
+## Publishing (GitHub, public since 2026-11-03, MIT)
+
+github.com/ProteinR/MXCtl, an ordinary repository: commit on `main` and `git push`. Its history
+starts at the public release (0.1.22); the older local history, whose early commits held
+Logitech's device pictures, is kept outside the repo in `../MXCtl-history-2026-11-03.bundle`
+(never push it). Bug reports come by e-mail (`BugReport.swift`, contact@memruk.dev).
