@@ -1,5 +1,7 @@
 # MXCtl — a tiny Logi Options+ replacement for MX Master 3S and MX Keys Mini on Mac
 
+**English** · [Русский](README.ru.md)
+
 <p align="center">
   <img src="MXCtl/Resources/Devices/2b034.png" alt="MX Master 3S" height="260">
   &nbsp;&nbsp;
@@ -23,7 +25,7 @@ The interface is in English or Russian: the system language by default, or chose
   App Exposé, desktops, mic mute…), a media key, opening an app or a URL, a Shortcuts command or a
   shell command. Everything else keeps working as the device intends.
 - **Settings like Options+**: a drawing of the device with a dot on every button; click a dot to
-  set its action. "Определить клавишу" names any key you press.
+  set its action. "Identify a key" names any key you press.
 - **Thumb gesture button**: click → Mission Control; hold and move the mouse → switch desktops
   (like a trackpad), Mission Control or App Exposé.
 - **Mic mute** (F9 by default) with a red tab on the edge of every screen while the mic is muted.
@@ -59,8 +61,8 @@ the two (about 6× less CPU while working).
 | Logi Options+ and Mos | ~342 MB | 2.2 % | 10.6 % | ~3.5 GB |
 | MXCtl | ~25 MB | 0.02 % | 1.67 % | 6.3 MB |
 
-Options+'s updater alone wakes the CPU 40–80 times a second; MXCtl ~0. Details in `RESULTS.md`
-(Russian) and `PROFILING.md`.
+Options+'s updater alone wakes the CPU 40–80 times a second; MXCtl ~0. Details in `RESULTS.md` and
+`PROFILING.md` (both in Russian).
 
 ## Requirements
 
@@ -79,7 +81,7 @@ alone. Other models have not been tested; from how MXCtl works, expect this:
 | | What works |
 |---|---|
 | MX Master 3S or MX Keys Mini alone | Everything; settings show just that device. |
-| Other Logitech mice and keyboards over **Bluetooth** (MX Master 3, MX Keys, MX Anywhere…) | Buttons and keys that the device lets software take over can be reassigned in "Все кнопки списком" (unknown ones are named by their code, e.g. "Кнопка 0x00C5"). No device drawing. SmartShift and the keyboard backlight where the device has them. |
+| Other Logitech mice and keyboards over **Bluetooth** (MX Master 3, MX Keys, MX Anywhere…) | Buttons and keys that the device lets software take over can be reassigned in "All buttons as a list" (unknown ones are named by their code, e.g. "Button 0x00C5"). No device drawing. SmartShift and the keyboard backlight where the device has them. |
 | Older Logitech devices (roughly before 2020, e.g. MX Master 2S) | As above, but no battery level: they report it in an older way MXCtl does not read. |
 | Logitech devices through a **Unifying or Bolt USB receiver** | Not supported: MXCtl talks to devices over Bluetooth only. |
 | Any mouse, any brand | Smooth scrolling and wheel reversal (trackpads and Magic Mouse are left alone). |
