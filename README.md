@@ -106,10 +106,11 @@ the PNGs smaller).
 
 ## Bug reports
 
-Settings → General → "Report a Bug…" (or right-click the menu bar icon) shows a report as
-read-only text: a template to fill in, the MXCtl and macOS versions, the Mac model, the
-permissions, the devices found and the last 300 lines of the log. A click copies it all; paste it
-into an e-mail to contact@memruk.dev ("Copy and Open Mail" does both).
+Settings → General → "Report a Bug…" (or right-click the menu bar icon): with Mail as the default
+mail app, a new e-mail to contact@memruk.dev with a template to fill in, the MXCtl and macOS
+versions, the Mac model, the permissions and the devices found, and the log attached. With any
+other mail app (web mail cannot take attachments), the same report with the last 300 lines of the
+log opens as text to copy and paste into an e-mail.
 
 ## License
 

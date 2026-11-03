@@ -601,7 +601,7 @@ private struct GeneralTab: View {
             }
             Section("Обратная связь") {
                 Button("Сообщить об ошибке…") { BugReport.compose() }
-                Text("Откроется отчёт с шаблоном, версиями, списком устройств и концом лога: скопируйте его и отправьте автору (\(BugReport.address)).")
+                Text("Письмо автору (\(BugReport.address)) с шаблоном, версиями и списком устройств. Лог приложится сам в Mail; с другой почтой откроется отчёт, чтобы скопировать его в письмо.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }

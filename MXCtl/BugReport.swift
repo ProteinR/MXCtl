@@ -1,10 +1,10 @@
 import AppKit
 import SwiftUI
 
-/// "Сообщить об ошибке": a window with the report as read-only text (a template to fill in, what
-/// MXCtl knows about the Mac and the devices, and the end of the log); a click copies all of it, to
-/// paste into any mail. Handing the log to the default mail app as an attachment was lost silently
-/// when that app was a browser with web mail.
+/// "Сообщить об ошибке": a template to fill in and what MXCtl knows about the Mac and the devices.
+/// With Mail as the default mail app: a new e-mail with the logs attached, in one click. With any
+/// other (a browser with web mail lost the attachments silently): a window with the report and the
+/// end of the log as text to copy and paste into any mail.
 enum BugReport {
     static let address = "contact@memruk.dev"
     static var subject: String { "MXCtl \(AppDelegate.appVersion): ошибка / bug report" }  // no-l10n
@@ -13,14 +13,34 @@ enum BugReport {
 
     @MainActor
     static func compose() {
-        BugReportWindow.shared.show()
-        Log.info("Bug report: window opened")
+        if CommandLine.arguments.contains("--bug-report") || !composeInMail() {
+            BugReportWindow.shared.show()
+            Log.info("Bug report: window opened")
+        }
+    }
+
+    /// A new e-mail in Mail with the logs attached; false when Mail is not the default mail app.
+    @MainActor
+    private static func composeInMail() -> Bool {
+        guard let mailto = URL(string: "mailto:"),
+              let app = NSWorkspace.shared.urlForApplication(toOpen: mailto),
+              Bundle(url: app)?.bundleIdentifier == "com.apple.mail",
+              let service = NSSharingService(named: .composeEmail) else { return false }
+        let body = text() + "\n\nThe log (mxctl.log) is attached: device names, key codes and actions, no typed text.\n"
+        let logs = [Log.fileURL, Log.fileURL.deletingLastPathComponent().appendingPathComponent("mxctl.1.log")]
+            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        guard service.canPerform(withItems: [body]) else { return false }
+        service.recipients = [address]
+        service.subject = subject
+        service.perform(withItems: [body as NSString] + logs.map { $0 as NSURL })
+        Log.info("Bug report: e-mail composed in Mail with \(logs.count) log file(s)")
+        return true
     }
 
     /// The template, the facts and the last lines of the log.
     @MainActor
     static func report() -> String {
-        text() + "\n" + logTail()
+        text() + "\n\nThe end of the log (device names, key codes and actions, no typed text):\n" + logTail()
     }
 
     private static func logTail() -> String {
@@ -78,8 +98,6 @@ enum BugReport {
         Also running: \(competitors.isEmpty ? "—" : competitors.joined(separator: ", "))
         Devices:
         \(devices.isEmpty ? "- none found" : devices.joined(separator: "\n"))
-
-        The end of the log (device names, key codes and actions, no typed text):
         """
     }
 
@@ -131,19 +149,17 @@ private struct BugReportView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Нажмите на текст, чтобы скопировать его, и вставьте в письмо на \(BugReport.address). Опишите, что случилось, в начале.")
+            Text("Скопируйте отчёт и вставьте его в письмо на \(BugReport.address). Опишите, что случилось, в начале.")
                 .fixedSize(horizontal: false, vertical: true)
             ScrollView {
                 Text(report)
                     .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(8)
             }
             .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.05)))
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(copied ? Color.green : Color.primary.opacity(0.15)))
-            .contentShape(Rectangle())
-            .onTapGesture { copy() }
-            .help("Нажмите, чтобы скопировать")
             HStack {
                 if copied {
                     Label("Скопировано", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
@@ -152,6 +168,7 @@ private struct BugReportView: View {
                 Button("Показать лог в Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting([Log.fileURL])
                 }
+                Button("Скопировать") { copy() }
                 Button("Скопировать и открыть письмо") {
                     copy()
                     BugReport.openMail()

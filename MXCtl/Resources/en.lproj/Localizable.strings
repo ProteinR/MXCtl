@@ -89,10 +89,8 @@
 "Мышь" = "Mouse";
 "Нажать %@" = "Press %@";
 "Нажмите клавишу или кнопку…" = "Press a key or button…";
-"Нажмите на текст, чтобы скопировать его, и вставьте в письмо на %@. Опишите, что случилось, в начале." = "Click the text to copy it, then paste it into an e-mail to %@. Describe what happened at the top.";
 "Нажмите на точку на изображении, чтобы настроить кнопку." = "Click a dot on the picture to set up a button.";
 "Нажмите сочетание…" = "Type the shortcut…";
-"Нажмите, чтобы скопировать" = "Click to copy";
 "Назад" = "Back";
 "Название команды" = "Shortcut name";
 "Насколько сдвинуть мышь с зажатой кнопкой, чтобы это стало свайпом. Меньше — чувствительнее." = "How far to move the mouse with the button held for a swipe. Lower is more sensitive.";
@@ -112,7 +110,6 @@
 "Они перехватывают те же клавиши и колесо. Закройте их, пока работает MXCtl." = "They take over the same keys and wheel. Quit them while MXCtl runs.";
 "Определить клавишу" = "Identify a key";
 "Отключено" = "Disconnected";
-"Откроется отчёт с шаблоном, версиями, списком устройств и концом лога: скопируйте его и отправьте автору (%@)." = "Opens a report with a template, versions, the device list and the end of the log: copy it and send it to the author (%@).";
 "Открыть %@" = "Open %@";
 "Открыть приложение" = "Open an app";
 "Открыть приложение…" = "Open an app…";
@@ -123,6 +120,7 @@
 "Переключить режим колеса" = "Switch wheel mode";
 "Перечитать" = "Reload";
 "Период" = "Period";
+"Письмо автору (%@) с шаблоном, версиями и списком устройств. Лог приложится сам в Mail; с другой почтой откроется отчёт, чтобы скопировать его в письмо." = "An e-mail to the author (%@) with a template, versions and the device list. In Mail the log is attached; with other mail apps a report opens to copy into the e-mail.";
 "Плавная прокрутка" = "Smooth scrolling";
 "Плавность" = "Smoothness";
 "По умолчанию" = "Default";
@@ -166,7 +164,9 @@
 "Своё действие устройства" = "The device's own action";
 "Сегодня событий: %lld" = "Events today: %lld";
 "Скопировано" = "Copied";
+"Скопировать" = "Copy";
 "Скопировать и открыть письмо" = "Copy and Open Mail";
+"Скопируйте отчёт и вставьте его в письмо на %@. Опишите, что случилось, в начале." = "Copy the report and paste it into an e-mail to %@. Describe what happened at the top.";
 "Скоро выключится — поставьте на зарядку." = "It will turn off soon — put it on charge.";
 "Скорость" = "Speed";
 "Следующий трек" = "Next track";
