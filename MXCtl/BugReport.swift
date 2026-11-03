@@ -1,33 +1,49 @@
 import AppKit
+import SwiftUI
 
-/// "Сообщить об ошибке": a new e-mail to the author with a template to fill in, what MXCtl knows
-/// about the Mac and the devices, and the log attached. Mail.app (or any mail app that offers the
-/// system "compose e-mail" share) gets the log as an attachment; otherwise a mailto: link opens the
-/// default mail app and Finder shows the log to attach by hand.
+/// "Сообщить об ошибке": a window with the report as read-only text (a template to fill in, what
+/// MXCtl knows about the Mac and the devices, and the end of the log); a click copies all of it, to
+/// paste into any mail. Handing the log to the default mail app as an attachment was lost silently
+/// when that app was a browser with web mail.
 enum BugReport {
     static let address = "contact@memruk.dev"
+    static var subject: String { "MXCtl \(AppDelegate.appVersion): ошибка / bug report" }  // no-l10n
+    /// Enough of the log to see what happened just before, small enough to paste into a mail.
+    private static let logLines = 300
 
     @MainActor
     static func compose() {
-        let subject = "MXCtl \(AppDelegate.appVersion): ошибка / bug report"  // no-l10n
-        let body = text()
-        let logs = [Log.fileURL, Log.fileURL.deletingLastPathComponent().appendingPathComponent("mxctl.1.log")]
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
-        if let service = NSSharingService(named: .composeEmail), service.canPerform(withItems: [body]) {
-            service.recipients = [address]
-            service.subject = subject
-            service.perform(withItems: [body as NSString] + logs.map { $0 as NSURL })
-            Log.info("Bug report: e-mail composed with \(logs.count) log file(s)")
-            return
-        }
+        BugReportWindow.shared.show()
+        Log.info("Bug report: window opened")
+    }
+
+    /// The template, the facts and the last lines of the log.
+    @MainActor
+    static func report() -> String {
+        text() + "\n" + logTail()
+    }
+
+    private static func logTail() -> String {
+        let urls = [Log.fileURL.deletingLastPathComponent().appendingPathComponent("mxctl.1.log"), Log.fileURL]
+        let lines = urls.compactMap { try? String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n")
+            .split(separator: "\n", omittingEmptySubsequences: true)
+            .suffix(logLines)
+        return lines.isEmpty ? "(log is empty)" : lines.joined(separator: "\n")
+    }
+
+    /// Opens a new mail to the author with the subject; the report is pasted into it.
+    static func openMail() {
         var components = URLComponents()
         components.scheme = "mailto"
         components.path = address
-        components.queryItems = [URLQueryItem(name: "subject", value: subject),
-                                 URLQueryItem(name: "body", value: body + "\n" + String(localized: "(Приложите, пожалуйста, лог: он открыт в Finder.)"))]
+        components.queryItems = [URLQueryItem(name: "subject", value: subject)]
         if let url = components.url { NSWorkspace.shared.open(url) }
-        if !logs.isEmpty { NSWorkspace.shared.activateFileViewerSelecting(logs) }
-        Log.info("Bug report: mailto link opened, log shown in Finder")
+    }
+
+    static func copy(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 
     /// The template and the facts, in Russian and English (the app is used by both).
@@ -63,7 +79,7 @@ enum BugReport {
         Devices:
         \(devices.isEmpty ? "- none found" : devices.joined(separator: "\n"))
 
-        The log (mxctl.log) is attached: device names, key codes and actions, no typed text.
+        The end of the log (device names, key codes and actions, no typed text):
         """
     }
 
@@ -74,5 +90,82 @@ enum BugReport {
         var model = [CChar](repeating: 0, count: max(size, 1))
         sysctlbyname("hw.model", &model, &size, nil, 0)
         return String(cString: model)
+    }
+}
+
+/// The report window. Made on open and dropped on close, like the settings window.
+@MainActor
+final class BugReportWindow: NSObject, NSWindowDelegate {
+    static let shared = BugReportWindow()
+    private var window: NSWindow?
+
+    func show() {
+        if window == nil {
+            let host = NSHostingController(rootView: BugReportView(report: BugReport.report()))
+            host.sizingOptions = []
+            let window = NSWindow(contentViewController: host)
+            window.title = String(localized: "Сообщить об ошибке")
+            window.styleMask = [.titled, .closable, .resizable]
+            window.isReleasedWhenClosed = false
+            window.delegate = self
+            window.setContentSize(NSSize(width: 640, height: 560))
+            window.center()
+            self.window = window
+        }
+        // Forced to the front, as the settings window (a menu bar app may be refused activation).
+        NSApp.activate(ignoringOtherApps: true)
+        window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window?.contentViewController = nil
+        window = nil
+        Memory.giveBackSoon()
+    }
+}
+
+private struct BugReportView: View {
+    let report: String
+    @State private var copied = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Нажмите на текст, чтобы скопировать его, и вставьте в письмо на \(BugReport.address). Опишите, что случилось, в начале.")
+                .fixedSize(horizontal: false, vertical: true)
+            ScrollView {
+                Text(report)
+                    .font(.system(.caption, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+            }
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.05)))
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(copied ? Color.green : Color.primary.opacity(0.15)))
+            .contentShape(Rectangle())
+            .onTapGesture { copy() }
+            .help("Нажмите, чтобы скопировать")
+            HStack {
+                if copied {
+                    Label("Скопировано", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                }
+                Spacer()
+                Button("Показать лог в Finder") {
+                    NSWorkspace.shared.activateFileViewerSelecting([Log.fileURL])
+                }
+                Button("Скопировать и открыть письмо") {
+                    copy()
+                    BugReport.openMail()
+                }
+                .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(14)
+        .frame(minWidth: 480, minHeight: 360)
+    }
+
+    private func copy() {
+        BugReport.copy(report)
+        copied = true
+        Log.info("Bug report: copied (\(report.count) characters)")
     }
 }

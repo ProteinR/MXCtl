@@ -75,6 +75,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if CommandLine.arguments.contains("--open-settings") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { SettingsWindow.shared.show() }
         }
+        // `--bug-report`: the bug report window, for screenshots.
+        if CommandLine.arguments.contains("--bug-report") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { BugReport.compose() }
+        }
         AppLanguage.reopenSettingsIfRestarted()
         if CommandLine.arguments.contains("--panel-test") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { self.statusItem?.runPanelTest() }

@@ -7,7 +7,6 @@
 "%@: сейчас порог %u" = "%@: threshold now %u";
 "%@: эту кнопку обрабатывает само устройство, переназначить нельзя." = "%@: the device handles this button itself; it cannot be reassigned.";
 "%lld кнопок, все по умолчанию" = "%lld buttons, all default";
-"(Приложите, пожалуйста, лог: он открыт в Finder.)" = "(Please attach the log: it is shown in Finder.)";
 ", хватит на ~%lld дн." = ", lasts ~%lld more days";
 "24 часа" = "24 hours";
 "30 дней" = "30 days";
@@ -90,8 +89,10 @@
 "Мышь" = "Mouse";
 "Нажать %@" = "Press %@";
 "Нажмите клавишу или кнопку…" = "Press a key or button…";
+"Нажмите на текст, чтобы скопировать его, и вставьте в письмо на %@. Опишите, что случилось, в начале." = "Click the text to copy it, then paste it into an e-mail to %@. Describe what happened at the top.";
 "Нажмите на точку на изображении, чтобы настроить кнопку." = "Click a dot on the picture to set up a button.";
 "Нажмите сочетание…" = "Type the shortcut…";
+"Нажмите, чтобы скопировать" = "Click to copy";
 "Назад" = "Back";
 "Название команды" = "Shortcut name";
 "Насколько сдвинуть мышь с зажатой кнопкой, чтобы это стало свайпом. Меньше — чувствительнее." = "How far to move the mouse with the button held for a swipe. Lower is more sensitive.";
@@ -111,7 +112,7 @@
 "Они перехватывают те же клавиши и колесо. Закройте их, пока работает MXCtl." = "They take over the same keys and wheel. Quit them while MXCtl runs.";
 "Определить клавишу" = "Identify a key";
 "Отключено" = "Disconnected";
-"Откроется письмо автору (%@) с шаблоном, версиями и списком устройств; лог приложится сам." = "Opens an e-mail to the author (%@) with a template, versions and the device list; the log is attached.";
+"Откроется отчёт с шаблоном, версиями, списком устройств и концом лога: скопируйте его и отправьте автору (%@)." = "Opens a report with a template, versions, the device list and the end of the log: copy it and send it to the author (%@).";
 "Открыть %@" = "Open %@";
 "Открыть приложение" = "Open an app";
 "Открыть приложение…" = "Open an app…";
@@ -134,6 +135,7 @@
 "Подсветка клавиатуры −" = "Keyboard backlight −";
 "Подсветка −" = "Backlight −";
 "Показать в Finder" = "Show in Finder";
+"Показать лог в Finder" = "Show Log in Finder";
 "Показать рабочий стол" = "Show desktop";
 "Полная зарядка: %@ (%@)" = "Last full charge: %@ (%@)";
 "Полная зарядка: ещё не было" = "Last full charge: not yet";
@@ -163,12 +165,15 @@
 "Свайп вправо" = "Swipe right";
 "Своё действие устройства" = "The device's own action";
 "Сегодня событий: %lld" = "Events today: %lld";
+"Скопировано" = "Copied";
+"Скопировать и открыть письмо" = "Copy and Open Mail";
 "Скоро выключится — поставьте на зарядку." = "It will turn off soon — put it on charge.";
 "Скорость" = "Speed";
 "Следующий трек" = "Next track";
 "Снимок экрана macOS" = "macOS screenshot";
 "Сон и пробуждение Mac, блокировка экрана, подключения и сообщения самих устройств — чтобы потом найти, например, почему ночью загорается подсветка." = "Mac sleep and wake, screen lock, connections and the devices' own messages — to find out later, say, why the backlight lights up at night.";
 "Сообщение устройства: %@" = "Device message: %@";
+"Сообщить об ошибке" = "Report a Bug";
 "Сообщить об ошибке…" = "Report a Bug…";
 "Сочетание клавиш" = "Key shortcut";
 "Сочетание клавиш…" = "Key shortcut…";

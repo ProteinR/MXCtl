@@ -139,4 +139,7 @@ Log: `~/Library/Logs/MXCtl/mxctl.log`. Versions: pre-commit hook as in MonitorCt
 github.com/ProteinR/MXCtl, an ordinary repository: commit on `main` and `git push`. Its history
 starts at the public release (0.1.22); the older local history, whose early commits held
 Logitech's device pictures, is kept outside the repo in `../MXCtl-history-2026-11-03.bundle`
-(never push it). Bug reports come by e-mail (`BugReport.swift`, contact@memruk.dev).
+(never push it). Bug reports come by e-mail (`BugReport.swift`, contact@memruk.dev): the app shows the report
+(template, versions, devices, last 300 log lines) as read-only text that a click copies, to paste
+into any mail. It used to hand the log to the default mail app as an attachment; with a browser
+(web mail) as the default, the attachment was lost silently. `--bug-report` opens the window.

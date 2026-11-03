@@ -106,9 +106,10 @@ the PNGs smaller).
 
 ## Bug reports
 
-Settings → Общие → "Сообщить об ошибке…" (or right-click the menu bar icon) opens an e-mail to
-the author with a template to fill in, the MXCtl and macOS versions, the Mac model, the
-permissions and the devices found, and the log attached. Or write to contact@memruk.dev directly.
+Settings → General → "Report a Bug…" (or right-click the menu bar icon) shows a report as
+read-only text: a template to fill in, the MXCtl and macOS versions, the Mac model, the
+permissions, the devices found and the last 300 lines of the log. A click copies it all; paste it
+into an e-mail to contact@memruk.dev ("Copy and Open Mail" does both).
 
 ## License
 
