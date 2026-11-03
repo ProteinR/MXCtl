@@ -1,0 +1,5 @@
+build/
+*.xcodeproj/
+MXCtl/Info.plist
+.DS_Store
+scripts/profile-results.jsonl
