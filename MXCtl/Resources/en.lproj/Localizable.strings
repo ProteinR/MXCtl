@@ -90,7 +90,6 @@
 "Нажать %@" = "Press %@";
 "Нажмите клавишу или кнопку…" = "Press a key or button…";
 "Нажмите на точку на изображении, чтобы настроить кнопку." = "Click a dot on the picture to set up a button.";
-"Нажмите сочетание…" = "Type the shortcut…";
 "Назад" = "Back";
 "Название команды" = "Shortcut name";
 "Насколько сдвинуть мышь с зажатой кнопкой, чтобы это стало свайпом. Меньше — чувствительнее." = "How far to move the mouse with the button held for a swipe. Lower is more sensitive.";
@@ -175,8 +174,6 @@
 "Сообщение устройства: %@" = "Device message: %@";
 "Сообщить об ошибке" = "Report a Bug";
 "Сообщить об ошибке…" = "Report a Bug…";
-"Сочетание клавиш" = "Key shortcut";
-"Сочетание клавиш…" = "Key shortcut…";
 "Средняя кнопка" = "Middle button";
 "Средняя кнопка (нажатие колеса)" = "Middle button (wheel click)";
 "Ссылка %@" = "Link %@";
@@ -210,3 +207,31 @@
 "тест" = "test";
 "экран погас" = "display turned off";
 "⌘⇧4 (скриншот)" = "⌘⇧4 (screenshot)";
+
+/* Mac keyboard page (KeyRemap) */
+"Диктовка (F5, микрофон)" = "Dictation (F5, microphone)";
+"Добавить клавишу…" = "Add a key…";
+"Как задумано в macOS" = "As macOS does it";
+"Клавиатура Mac" = "Mac keyboard";
+"Клавиши встроенной клавиатуры Mac и любой другой: нажмите «Добавить клавишу», нажмите её и выберите действие. Например, F5 с микрофоном (диктовка) → «Микрофон вкл/выкл». Своё действие клавиши (диктовка, громкость…) тогда не срабатывает." = "Keys of the Mac's own keyboard and any other: click “Add a key”, press it and pick an action. For example, F5 with the microphone (dictation) → “Microphone on/off”. The key's own function (dictation, volume…) then no longer happens.";
+"Медиаклавиша %lld" = "Media key %lld";
+"Нажмите клавишу… (Esc — отмена)" = "Press a key… (Esc to cancel)";
+"Не беспокоить (F6)" = "Do Not Disturb (F6)";
+"Нужен доступ «Универсальный доступ», без него клавиши не перехватываются." = "Needs the Accessibility permission; without it keys are not taken over.";
+"Открыть настройки" = "Open Settings";
+"Перемотка вперёд" = "Fast forward";
+"Перемотка назад" = "Rewind";
+"Подсветка клавиатуры вкл/выкл" = "Keyboard backlight on/off";
+"Пока ни одна клавиша не переназначена." = "No keys are remapped yet.";
+"Убрать клавишу" = "Remove the key";
+"Клавиша или сочетание" = "Key or combination";
+"Клавиша или сочетание…" = "Key or combination…";
+"Нажмите клавишу или сочетание…" = "Press a key or combination…";
+"Левый ⇧" = "Left ⇧";
+"Левый ⌃" = "Left ⌃";
+"Левый ⌘" = "Left ⌘";
+"Левый ⌥" = "Left ⌥";
+"Правый ⇧" = "Right ⇧";
+"Правый ⌃" = "Right ⌃";
+"Правый ⌘" = "Right ⌘";
+"Правый ⌥" = "Right ⌥";

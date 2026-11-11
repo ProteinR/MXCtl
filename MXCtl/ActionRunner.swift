@@ -75,7 +75,14 @@ enum ActionRunner {
                                            kVK_F9, kVK_F10, kVK_F11, kVK_F12]
     private static let arrowKeys: Set<Int> = [kVK_LeftArrow, kVK_RightArrow, kVK_UpArrow, kVK_DownArrow]
 
+    /// Presses and releases it.
     static func post(_ keystroke: Keystroke) {
+        press(keystroke, down: true)
+        press(keystroke, down: false)
+    }
+
+    /// One half of a press: a button held down holds the key (hold-to-talk dictation keys).
+    static func press(_ keystroke: Keystroke, down: Bool) {
         let source = CGEventSource(stateID: .hidSystemState)
         var flags = CGEventFlags()
         let modifiers = keystroke.flags
@@ -85,12 +92,15 @@ enum ActionRunner {
         if modifiers.contains(.control) { flags.insert(.maskControl) }
         if fnKeys.contains(Int(keystroke.keyCode)) { flags.insert(.maskSecondaryFn) }
         if arrowKeys.contains(Int(keystroke.keyCode)) { flags.insert(.maskNumericPad) }
-        for down in [true, false] {
-            guard let event = CGEvent(keyboardEventSource: source, virtualKey: keystroke.keyCode, keyDown: down) else { continue }
-            event.flags = flags
-            event.setIntegerValueField(.eventSourceUserData, value: eventMarker)
-            event.post(tap: .cghidEventTap)
+        guard let event = CGEvent(keyboardEventSource: source, virtualKey: keystroke.keyCode, keyDown: down) else { return }
+        if let modifier = keystroke.modifierKey {
+            // A modifier alone is a "flags changed" event: down sets its flag and device bit, up clears them.
+            event.type = .flagsChanged
+            if down { flags.insert(CGEventFlags(rawValue: modifier.flag.rawValue | modifier.deviceMask)) }
         }
+        event.flags = flags
+        event.setIntegerValueField(.eventSourceUserData, value: eventMarker)
+        event.post(tap: .cghidEventTap)
     }
 
     static func postMedia(_ key: MediaAction) {
@@ -100,7 +110,10 @@ enum ActionRunner {
                                            modifierFlags: NSEvent.ModifierFlags(rawValue: down ? 0xA00 : 0xB00),
                                            timestamp: 0, windowNumber: 0, context: nil, subtype: 8,
                                            data1: data1, data2: -1)
-            event?.cgEvent?.post(tap: .cghidEventTap)
+            guard let cgEvent = event?.cgEvent else { continue }
+            // Marked, so a media key taken over by KeyRemap does not catch MXCtl's own.
+            cgEvent.setIntegerValueField(.eventSourceUserData, value: eventMarker)
+            cgEvent.post(tap: .cghidEventTap)
         }
     }
 

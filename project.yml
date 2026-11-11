@@ -7,8 +7,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.1.25"
-    CURRENT_PROJECT_VERSION: "26"
+    MARKETING_VERSION: "0.1.26"
+    CURRENT_PROJECT_VERSION: "27"
     # No Apple Developer account: ad-hoc signing, no hardened runtime (scripts/install.sh re-signs
     # with the local certificate so Accessibility and Input Monitoring survive rebuilds).
     DEVELOPMENT_TEAM: ""

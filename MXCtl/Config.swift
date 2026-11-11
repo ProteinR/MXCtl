@@ -17,8 +17,11 @@ struct Keystroke: Codable, Hashable {
         if flags.contains(.option) { text += "⌥" }
         if flags.contains(.shift) { text += "⇧" }
         if flags.contains(.command) { text += "⌘" }
-        return text + label
+        return text + (KeyNames.modifierKeys[Int(keyCode)]?.title ?? label)
     }
+
+    /// A modifier key alone (right ⌃): pressed and released as a modifier, held while the button is.
+    var modifierKey: KeyNames.ModifierKey? { KeyNames.modifierKeys[Int(keyCode)] }
 
     static let screenshotArea = Keystroke(keyCode: UInt16(kVK_ANSI_4), modifiers: NSEvent.ModifierFlags([.command, .shift]).rawValue, label: "4")
 }
@@ -140,6 +143,96 @@ struct ButtonBinding: Codable, Hashable {
     }
 }
 
+/// A key MXCtl catches by its key event (the Mac's own keyboard, or any other keyboard), not over
+/// HID++: an ordinary key (virtual key code, also the Apple top-row codes 160/176/177/178) or a
+/// media key (`NX_KEYTYPE_*`), with the modifiers held. Fn is ignored: the top row sends F5 with
+/// Fn and the dictation code without it.
+struct KeyTrigger: Codable, Hashable {
+    enum Kind: String, Codable { case key, media }
+
+    var kind: Kind
+    var code: Int
+    /// `NSEvent.ModifierFlags`: command, shift, option, control only.
+    var modifiers: UInt = 0
+    /// What the key typed when it was added ("Q"), for keys without a name of their own.
+    var label = ""
+
+    /// What two triggers are compared by (the label is only for showing).
+    var matchKey: String { "\(kind.rawValue):\(code):\(modifiers)" }
+
+    var title: String {
+        let flags = NSEvent.ModifierFlags(rawValue: modifiers)
+        var text = ""
+        if flags.contains(.control) { text += "⌃" }
+        if flags.contains(.option) { text += "⌥" }
+        if flags.contains(.shift) { text += "⇧" }
+        if flags.contains(.command) { text += "⌘" }
+        return text + (KeyNames.name(kind: kind, code: code) ?? (label.isEmpty ? "#\(code)" : label))
+    }
+}
+
+/// One taken-over key and what it does now.
+struct MacKeyBinding: Codable, Hashable, Identifiable {
+    var trigger: KeyTrigger
+    var action: Action = .native
+
+    var id: String { trigger.matchKey }
+}
+
+/// Names of keys that do not type a character.
+enum KeyNames {
+    static func name(kind: KeyTrigger.Kind, code: Int) -> String? {
+        switch kind {
+        case .media:
+            if let media = MediaAction(rawValue: code) { return media.title }
+            switch code {
+            case 19: return String(localized: "Перемотка вперёд")
+            case 20: return String(localized: "Перемотка назад")
+            case 23: return String(localized: "Подсветка клавиатуры вкл/выкл")
+            default: return String(localized: "Медиаклавиша \(code)")
+            }
+        case .key:
+            switch code {
+            // The Apple keyboard's top row without Fn.
+            case 160: return String(localized: "Mission Control (F3)")
+            case 176: return String(localized: "Диктовка (F5, микрофон)")
+            case 177: return String(localized: "Spotlight (F4)")
+            case 178: return String(localized: "Не беспокоить (F6)")
+            case 131: return "Launchpad"
+            default: return specialKeys[code]
+            }
+        }
+    }
+
+    /// A modifier key: its flag, the device-dependent bit it sets in `CGEventFlags` while down
+    /// (which tells right ⌃ from left; apps such as Genius Typer look at it) and its name.
+    struct ModifierKey {
+        let flag: CGEventFlags
+        let deviceMask: UInt64
+        let title: String
+    }
+
+    static let modifierKeys: [Int: ModifierKey] = [
+        kVK_RightOption: ModifierKey(flag: .maskAlternate, deviceMask: 0x40, title: String(localized: "Правый ⌥")),
+        kVK_Option: ModifierKey(flag: .maskAlternate, deviceMask: 0x20, title: String(localized: "Левый ⌥")),
+        kVK_RightCommand: ModifierKey(flag: .maskCommand, deviceMask: 0x10, title: String(localized: "Правый ⌘")),
+        kVK_Command: ModifierKey(flag: .maskCommand, deviceMask: 0x08, title: String(localized: "Левый ⌘")),
+        kVK_RightControl: ModifierKey(flag: .maskControl, deviceMask: 0x2000, title: String(localized: "Правый ⌃")),
+        kVK_Control: ModifierKey(flag: .maskControl, deviceMask: 0x01, title: String(localized: "Левый ⌃")),
+        kVK_RightShift: ModifierKey(flag: .maskShift, deviceMask: 0x04, title: String(localized: "Правый ⇧")),
+        kVK_Shift: ModifierKey(flag: .maskShift, deviceMask: 0x02, title: String(localized: "Левый ⇧")),
+    ]
+
+    static let specialKeys: [Int: String] = [
+        kVK_LeftArrow: "←", kVK_RightArrow: "→", kVK_UpArrow: "↑", kVK_DownArrow: "↓",
+        kVK_Space: String(localized: "Пробел"), kVK_Return: "↩", kVK_Tab: "⇥", kVK_Delete: "⌫", kVK_ForwardDelete: "⌦",
+        kVK_Escape: "Esc", kVK_Home: "↖", kVK_End: "↘", kVK_PageUp: "⇞", kVK_PageDown: "⇟",
+        kVK_F1: "F1", kVK_F2: "F2", kVK_F3: "F3", kVK_F4: "F4", kVK_F5: "F5", kVK_F6: "F6",
+        kVK_F7: "F7", kVK_F8: "F8", kVK_F9: "F9", kVK_F10: "F10", kVK_F11: "F11", kVK_F12: "F12",
+        kVK_F13: "F13", kVK_F14: "F14", kVK_F15: "F15", kVK_F16: "F16", kVK_F17: "F17", kVK_F18: "F18", kVK_F19: "F19",
+    ]
+}
+
 enum SwipeDirection: String, CaseIterable {
     case up, down, left, right
 
@@ -215,6 +308,8 @@ struct Config: Codable, Equatable {
     var batteryCritical = 5
     /// Keyboard backlight off while the Mac sleeps (and its screens are off), back on at wake.
     var backlightOffOnSleep = true
+    /// Keys of the Mac's own keyboard (and others) taken over by their key events (`KeyRemap`).
+    var macKeys: [MacKeyBinding] = []
 
     static func key(_ cid: UInt16) -> String { String(format: "%04X", cid) }
 
@@ -239,6 +334,7 @@ struct Config: Codable, Equatable {
         batteryWarning = try c.decodeIfPresent(Int.self, forKey: .batteryWarning) ?? 15
         batteryCritical = try c.decodeIfPresent(Int.self, forKey: .batteryCritical) ?? 5
         backlightOffOnSleep = try c.decodeIfPresent(Bool.self, forKey: .backlightOffOnSleep) ?? true
+        macKeys = try c.decodeIfPresent([MacKeyBinding].self, forKey: .macKeys) ?? []
     }
 
     func binding(_ cid: UInt16) -> ButtonBinding { bindings[Config.key(cid)] ?? ButtonBinding() }

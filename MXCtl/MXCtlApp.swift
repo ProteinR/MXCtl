@@ -45,7 +45,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let permissions = Permissions.shared
         permissions.onChange = {
             if permissions.inputMonitoring { DeviceManager.shared.restart() }
-            if permissions.accessibility { SmoothScroll.shared.apply(ConfigStore.shared.config.scroll) }
+            if permissions.accessibility {
+                SmoothScroll.shared.apply(ConfigStore.shared.config.scroll)
+                KeyRemap.shared.apply(ConfigStore.shared.config.macKeys)
+            }
         }
         permissions.start()
         EventJournal.shared.start()
@@ -55,6 +58,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .map(\.scroll)
             .removeDuplicates()
             .sink { SmoothScroll.shared.apply($0) }
+            .store(in: &cancellables)
+        ConfigStore.shared.$config
+            .map(\.macKeys)
+            .removeDuplicates()
+            .sink { KeyRemap.shared.apply($0) }
             .store(in: &cancellables)
 
         if CommandLine.arguments.contains("--settings-scroll-test") { SettingsWindow.shared.runScrollTest() }

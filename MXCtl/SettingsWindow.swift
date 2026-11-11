@@ -190,24 +190,29 @@ private struct ButtonsTab: View {
     @State private var showList = CommandLine.arguments.contains("--settings-scroll-test")
 
     var body: some View {
-        let device = manager.devices.first { $0.id == deviceID } ?? manager.devices.first
+        let showsMac = deviceID == Self.macID
+        let device = showsMac ? nil : manager.devices.first { $0.id == deviceID } ?? manager.devices.first
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    if manager.devices.count > 1 {
-                        Picker("", selection: Binding(get: { device?.id }, set: { deviceID = $0; selected = nil })) {
-                            ForEach(manager.devices) { Text($0.name).tag(Optional($0.id)) }
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .fixedSize()
+                    // The Mac's own keyboard is one more "device": its keys go by key events (KeyRemap).
+                    Picker("", selection: Binding(get: { showsMac ? Self.macID : device?.id }, set: { deviceID = $0; selected = nil })) {
+                        ForEach(manager.devices) { Text($0.name).tag(Optional($0.id)) }
+                        Text("Клавиатура Mac").tag(Optional(Self.macID))
                     }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
                     Spacer()
-                    Button(manager.isLearning ? "Нажмите клавишу или кнопку…" : "Определить клавишу") {
-                        manager.isLearning ? manager.stopLearning() : manager.startLearning()
+                    if !showsMac {
+                        Button(manager.isLearning ? "Нажмите клавишу или кнопку…" : "Определить клавишу") {
+                            manager.isLearning ? manager.stopLearning() : manager.startLearning()
+                        }
                     }
                 }
-                if let device {
+                if showsMac {
+                    MacKeysSection()
+                } else if let device {
                     // A new picture per device (its own @State), not the previous device's.
                     DevicePicture(device: device, selected: $selected)
                         .id(device.id)
@@ -222,7 +227,7 @@ private struct ButtonsTab: View {
                         .frame(maxWidth: .infinity, minHeight: 200)
                 }
                 let offline = offlineKeys
-                if !offline.isEmpty {
+                if !showsMac && !offline.isEmpty {
                     GroupBox("Не подключены сейчас") {
                         VStack(alignment: .leading, spacing: 10) {
                             ForEach(offline, id: \.self) { cid in
@@ -276,6 +281,8 @@ private struct ButtonsTab: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
+
+    private static let macID = "mac"  // no-l10n
 
     /// "Изменено: F8 (скриншот)", or that all are by default.
     private func summary(_ device: LogiDevice) -> String {
@@ -489,6 +496,94 @@ private struct ControlRow: View {
                     value[keyPath: keyPath] = $0
                     store.setBinding(value, for: cid)
                 })
+    }
+}
+
+// MARK: - Mac keyboard
+
+/// Keys of the Mac's own keyboard (and any other keyboard) by their key events (`KeyRemap`): add a
+/// key by pressing it, then pick what it does. Shown on the Buttons page as one more device.
+private struct MacKeysSection: View {
+    @EnvironmentObject private var store: ConfigStore
+    @ObservedObject private var permissions = Permissions.shared
+    @State private var recording = false
+    /// The key just added or pressed again while recording, highlighted.
+    @State private var highlighted: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if !permissions.accessibility {
+                HStack {
+                    Text("Нужен доступ «Универсальный доступ», без него клавиши не перехватываются.")
+                    Spacer()
+                    Button("Открыть настройки") { permissions.requestAccessibility() }
+                }
+            }
+            GroupBox {
+                VStack(alignment: .leading, spacing: 10) {
+                    if store.config.macKeys.isEmpty {
+                        Text("Пока ни одна клавиша не переназначена.").foregroundStyle(.secondary)
+                    }
+                    ForEach(store.config.macKeys) { key in
+                        row(key)
+                        Divider()
+                    }
+                    Button(recording ? String(localized: "Нажмите клавишу… (Esc — отмена)") : String(localized: "Добавить клавишу…")) {
+                        recording ? stopRecording() : startRecording()
+                    }
+                }
+                .padding(6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Text("Клавиши встроенной клавиатуры Mac и любой другой: нажмите «Добавить клавишу», нажмите её и выберите действие. Например, F5 с микрофоном (диктовка) → «Микрофон вкл/выкл». Своё действие клавиши (диктовка, громкость…) тогда не срабатывает.")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .onDisappear { stopRecording() }
+    }
+
+    private func row(_ key: MacKeyBinding) -> some View {
+        HStack(alignment: .top) {
+            Text(key.trigger.title)
+                .fontWeight(highlighted == key.id ? .bold : .regular)
+                .foregroundStyle(highlighted == key.id ? Color.accentColor : .primary)
+            Spacer()
+            ActionEditor(action: binding(key.id), defaultAction: .native, defaultTitle: String(localized: "Как задумано в macOS"))
+            Button {
+                store.config.macKeys.removeAll { $0.id == key.id }
+            } label: {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.borderless)
+            .help(String(localized: "Убрать клавишу"))
+        }
+    }
+
+    private func binding(_ id: String) -> Binding<Action> {
+        Binding(get: { store.config.macKeys.first { $0.id == id }?.action ?? .native },
+                set: { action in
+                    if let index = store.config.macKeys.firstIndex(where: { $0.id == id }) {
+                        store.config.macKeys[index].action = action
+                    }
+                })
+    }
+
+    private func startRecording() {
+        recording = true
+        KeyRemap.shared.record { trigger in
+            recording = false
+            guard let trigger else { return }
+            if !store.config.macKeys.contains(where: { $0.id == trigger.matchKey }) {
+                store.config.macKeys.append(MacKeyBinding(trigger: trigger))
+            }
+            highlighted = trigger.matchKey
+        }
+    }
+
+    private func stopRecording() {
+        guard recording else { return }
+        recording = false
+        KeyRemap.shared.cancelRecording()
     }
 }
 

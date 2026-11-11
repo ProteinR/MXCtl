@@ -73,8 +73,10 @@ enum KnownControl {
         case micMute:
             return ButtonBinding(click: .system(.micMute))
         case gestureButton:
+            // Like a trackpad (as Config.defaultBindings): dragging right pulls the desktop on the
+            // left into view. The other way round, every untouched config showed the button as changed.
             return ButtonBinding(click: .system(.missionControl), up: .system(.missionControl), down: .system(.appExpose),
-                                 left: .system(.desktopLeft), right: .system(.desktopRight))
+                                 left: .system(.desktopRight), right: .system(.desktopLeft))
         default:
             return ButtonBinding()
         }

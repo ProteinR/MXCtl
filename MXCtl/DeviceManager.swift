@@ -19,6 +19,8 @@ final class DeviceManager: ObservableObject {
     private var all: [IOHIDDevice: LogiDevice] = [:]
     private var gesture = GestureTracker(threshold: 60)
     private var gestureControl: UInt16?
+    /// Buttons set to a key that are held now: the key is held too, released with the button.
+    private var heldKeys: [UInt16: Keystroke] = [:]
     private var gestureTrace = GestureTrace()
     private var gestureStart: UInt64 = 0
     private var learnTimeout: DispatchWorkItem?
@@ -161,6 +163,8 @@ final class DeviceManager: ObservableObject {
     }
 
     func releaseAll() {
+        for keystroke in heldKeys.values { ActionRunner.press(keystroke, down: false) }
+        heldKeys = [:]
         for device in devices { device.releaseAllNow() }
     }
 
@@ -329,10 +333,19 @@ final class DeviceManager: ObservableObject {
                 gestureTrace = GestureTrace()
                 gestureTrace.pointerDown = NSEvent.mouseLocation
                 gestureStart = DispatchTime.now().uptimeNanoseconds
+            } else if case .keystroke(let keystroke) = binding.click {
+                Log.info("\(KnownControl.name(cid)) → hold \(keystroke.title)", "action")
+                if let previous = heldKeys[cid] { ActionRunner.press(previous, down: false) }
+                heldKeys[cid] = keystroke
+                ActionRunner.press(keystroke, down: true)
             } else {
                 ActionRunner.run(binding.click, source: KnownControl.name(cid))
             }
         case .up(let cid):
+            if let keystroke = heldKeys.removeValue(forKey: cid) {
+                ActionRunner.press(keystroke, down: false)
+                return
+            }
             guard cid == gestureControl else {
                 if config.binding(cid).usesSwipes { Log.warning("Gesture: \(KnownControl.name(cid)) released without a press", "gesture") }
                 return

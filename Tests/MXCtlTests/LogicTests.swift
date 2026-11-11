@@ -1,3 +1,4 @@
+import Carbon.HIToolbox
 import XCTest
 @testable import MXCtl
 
@@ -261,7 +262,38 @@ final class LogicTests: XCTestCase {
         var config = Config()
         config.bindings[Config.key(KnownControl.forward)] = ButtonBinding(click: .openURL("shortcuts://run-shortcut?name=X"))
         config.scroll.step = 30
+        config.macKeys = [MacKeyBinding(trigger: KeyTrigger(kind: .key, code: 176), action: .system(.micMute))]
+        XCTAssertTrue(empty.macKeys.isEmpty)
         let data = try JSONEncoder().encode(config)
         XCTAssertEqual(try JSONDecoder().decode(Config.self, from: data), config)
+    }
+
+    // MARK: Mac keys
+
+    func testMediaKeyData() {
+        // Play/pause (16) down, then up with the repeat bit clear.
+        XCTAssertEqual(KeyRemap.media(data1: (16 << 16) | (0xA << 8))?.code, 16)
+        XCTAssertEqual(KeyRemap.media(data1: (16 << 16) | (0xA << 8))?.down, true)
+        XCTAssertEqual(KeyRemap.media(data1: (16 << 16) | (0xB << 8))?.down, false)
+        XCTAssertEqual(KeyRemap.media(data1: (0 << 16) | (0xA << 8) | 1)?.isRepeat, true)
+        XCTAssertNil(KeyRemap.media(data1: 0))
+    }
+
+    func testKeyTriggerMatchAndTitle() {
+        let dictation = KeyTrigger(kind: .key, code: 176)
+        XCTAssertEqual(dictation.matchKey, KeyTrigger(kind: .key, code: 176, label: "x").matchKey)
+        XCTAssertNotEqual(dictation.matchKey, KeyTrigger(kind: .media, code: 176).matchKey)
+        let commandQ = KeyTrigger(kind: .key, code: 12, modifiers: NSEvent.ModifierFlags.command.rawValue, label: "Q")
+        XCTAssertEqual(commandQ.title, "⌘Q")
+        XCTAssertNotEqual(commandQ.matchKey, KeyTrigger(kind: .key, code: 12, label: "Q").matchKey)
+        XCTAssertEqual(KeyRemap.modifiers([.maskSecondaryFn, .maskShift]), NSEvent.ModifierFlags.shift.rawValue)
+    }
+
+    func testModifierKeystrokeAndGestureDefault() {
+        let rightControl = Keystroke(keyCode: UInt16(kVK_RightControl), modifiers: 0, label: "")
+        XCTAssertEqual(rightControl.modifierKey?.deviceMask, 0x2000)
+        XCTAssertNil(Keystroke.screenshotArea.modifierKey)
+        // The shipped gesture setup is the default, not "changed".
+        XCTAssertFalse(KnownControl.isChanged(KnownControl.gestureButton, Config().binding(KnownControl.gestureButton)))
     }
 }

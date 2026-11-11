@@ -26,6 +26,16 @@ Options+ took ~360 MB RAM and ~3.5 GB disk with telemetry; MXCtl takes ~12–20 
 - SmartShift threshold written on every connect (first value read from the mouse: 10).
 - Mouse wheel: Mos's smoothing and reversal of the wheel only. Defaults are the owner's tuning:
   step 65, speed 1.8, duration 2.75 (Mos had step 50, speed 1.07).
+- Mac keyboard (Кнопки → "Клавиатура Mac", one more device next to the Logitech ones; `KeyRemap.swift`): keys MXCtl cannot reach over HID++
+  (the MacBook's own keyboard, any other keyboard) are taken over by their key events: "Добавить
+  клавишу" records the next key (also media keys and the top row: F5 dictation is key code 176,
+  F4 Spotlight 177, F6 Do Not Disturb 178, F3 Mission Control 160), then any action. Session event
+  tap on its own thread, only while a key is taken over or recorded; the press, its repeats and
+  release are swallowed. Config `macKeys`. MXCtl's own posted events carry `eventMarker`.
+- A button set to a key ("Клавиша или сочетание", also a lone modifier such as right ⌃, recorded by
+  pressing and releasing it) holds that key while the button is held (hold-to-talk dictation in
+  Genius Typer); a lone modifier is posted as flagsChanged with its device bit (0x2000 = right ⌃).
+  Buttons with swipes still press the key once on release.
 - Everything else stays native ("Как задумано устройством"): volume, backlight, F10 play/pause, back.
 
 Settings → Кнопки looks like Logi Options+: the device picture with a dot on every button (white =

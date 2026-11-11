@@ -18,7 +18,7 @@ struct ActionEditor: View {
                 item(defaultTitle, defaultAction)
                 if defaultAction != .nothing { item(String(localized: "Ничего не делать"), .nothing) }
                 Divider()
-                Button("Сочетание клавиш…") { select("keystroke") }
+                Button("Клавиша или сочетание…") { select("keystroke") }
                 Divider()
                 ForEach(SystemAction.allCases.filter { .system($0) != defaultAction }) { item($0.title, .system($0)) }
                 Divider()
@@ -51,7 +51,7 @@ struct ActionEditor: View {
         switch action {
         case .native: return String(localized: "Своё действие устройства")
         case .nothing: return String(localized: "Ничего не делать")
-        case .keystroke: return String(localized: "Сочетание клавиш")
+        case .keystroke: return String(localized: "Клавиша или сочетание")
         case .system(let system): return system.title
         case .media(let media): return media.title
         case .openApp: return String(localized: "Открыть приложение")
@@ -135,9 +135,11 @@ struct ShortcutRecorder: View {
     @Binding var keystroke: Keystroke
     @State private var recording = false
     @State private var monitor: Any?
+    /// A modifier key pressed alone so far: released without another key, it is the keystroke.
+    @State private var pendingModifier: UInt16?
 
     var body: some View {
-        Button(recording ? String(localized: "Нажмите сочетание…") : keystroke.title) {
+        Button(recording ? String(localized: "Нажмите клавишу или сочетание…") : keystroke.title) {
             recording ? stop() : start()
         }
         .frame(minWidth: 120)
@@ -146,7 +148,21 @@ struct ShortcutRecorder: View {
 
     private func start() {
         recording = true
-        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+        pendingModifier = nil
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { event in
+            if event.type == .flagsChanged {
+                // Right ⌃ alone (a dictation key, say): down, then up with nothing between.
+                guard let modifier = KeyNames.modifierKeys[Int(event.keyCode)] else { return nil }
+                let isDown = UInt64(event.modifierFlags.rawValue) & modifier.deviceMask != 0
+                if isDown {
+                    pendingModifier = event.keyCode
+                } else if pendingModifier == event.keyCode {
+                    keystroke = Keystroke(keyCode: event.keyCode, modifiers: 0, label: modifier.title)
+                    stop()
+                }
+                return nil
+            }
+            pendingModifier = nil
             if event.keyCode == UInt16(kVK_Escape) {
                 stop()
                 return nil
@@ -164,17 +180,8 @@ struct ShortcutRecorder: View {
         monitor = nil
     }
 
-    private static let specialKeys: [Int: String] = [
-        kVK_LeftArrow: "←", kVK_RightArrow: "→", kVK_UpArrow: "↑", kVK_DownArrow: "↓",
-        kVK_Space: String(localized: "Пробел"), kVK_Return: "↩", kVK_Tab: "⇥", kVK_Delete: "⌫", kVK_ForwardDelete: "⌦",
-        kVK_Home: "↖", kVK_End: "↘", kVK_PageUp: "⇞", kVK_PageDown: "⇟",
-        kVK_F1: "F1", kVK_F2: "F2", kVK_F3: "F3", kVK_F4: "F4", kVK_F5: "F5", kVK_F6: "F6",
-        kVK_F7: "F7", kVK_F8: "F8", kVK_F9: "F9", kVK_F10: "F10", kVK_F11: "F11", kVK_F12: "F12",
-        kVK_F13: "F13", kVK_F14: "F14", kVK_F15: "F15", kVK_F16: "F16", kVK_F17: "F17", kVK_F18: "F18", kVK_F19: "F19",
-    ]
-
     private static func label(for event: NSEvent) -> String {
-        if let special = specialKeys[Int(event.keyCode)] { return special }
+        if let special = KeyNames.specialKeys[Int(event.keyCode)] { return special }
         return (event.charactersIgnoringModifiers ?? "?").uppercased()
     }
 }
