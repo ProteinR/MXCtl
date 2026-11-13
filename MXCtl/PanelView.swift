@@ -30,6 +30,8 @@ struct PanelView: View {
                         button: nil, action: {})
             }
 
+            UpdateBanner()
+
             if manager.devices.isEmpty {
                 Text(permissions.inputMonitoring ? "Устройства Logitech не найдены" : "Устройства появятся после разрешения")
                     .font(.callout).foregroundStyle(.secondary)

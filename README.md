@@ -11,7 +11,7 @@
 **MXCtl** is a native macOS menu bar app that does what Logi Options+ does for the **MX Master 3S**
 mouse and the **MX Keys Mini** keyboard, and has **smooth scrolling like Mos built in**, at a
 fraction of the cost: ~25 MB of memory instead of ~342 MB, 6.3 MB on disk instead of ~3.5 GB, and
-no telemetry, accounts or updater.
+no telemetry or accounts, and its own small updater (one request to GitHub every 6 hours, which you can turn off).
 
 It talks to the devices directly over Bluetooth with Logitech's HID++ 2.0 protocol, the same way
 Options+ does, so keys and buttons are taken over on the device itself instead of being guessed
@@ -91,6 +91,19 @@ swipes — are tied to the control codes of these two devices. Another mouse wit
 gesture button (MX Master 3, MX Master 2S) gets the swipes too; on a keyboard with a different top
 row, F8/F9 may be other keys or missing, and you set them in the list.
 
+## Install and updates
+
+Download `MXCtl-<version>.dmg` from [Releases](https://github.com/ProteinR/MXCtl/releases) and drag
+MXCtl to Applications (Apple Silicon and Intel, macOS 15+). It is not notarized: open it once, then
+System Settings → Privacy & Security → "Open Anyway".
+
+MXCtl then offers new versions itself: "Version X available" in the panel with **Update**,
+**Later** (hidden for a day) and **Skip** (that version is not offered again; the next one is).
+Settings → General → Updates: check automatically (on by default), install automatically (off;
+waits until the keyboard and mouse have been idle for 2 minutes), and **Check Now**, which shows a
+skipped version again. An update is installed only if it is signed with the same certificate as
+the running copy and matches GitHub's checksum, so the macOS permissions are kept.
+
 ## Build
 
 Needs Xcode and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
@@ -102,6 +115,12 @@ scripts/install.sh
 builds a Release copy and installs it to `~/Applications/MXCtl.app`. It is ad-hoc signed; to keep
 the macOS permissions across rebuilds, sign it with a local code-signing certificate of your own
 (the script uses one named "dmemruk Local Code Signing" when it exists). Tests: `scripts/test.sh`.
+A copy built this way does not update itself (another certificate): rebuild it.
+
+Releases: `.github/workflows/release.yml` runs the tests and the string check, builds a universal
+app with `scripts/make-release.sh`, signs it with the release certificate from the repository
+secrets and publishes the `.dmg` and `.zip`, on a pushed tag `vX.Y.Z` (equal to
+`MARKETING_VERSION`) or by hand (Actions → Release → Run workflow).
 
 The device drawings are made by `scripts/make-device-art.py` (needs `rsvg-convert`; Pillow makes
 the PNGs smaller).

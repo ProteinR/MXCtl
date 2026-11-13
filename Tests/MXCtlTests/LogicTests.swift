@@ -296,4 +296,62 @@ final class LogicTests: XCTestCase {
         // The shipped gesture setup is the default, not "changed".
         XCTAssertFalse(KnownControl.isChanged(KnownControl.gestureButton, Config().binding(KnownControl.gestureButton)))
     }
+
+    // MARK: Updates
+
+    func testParseRelease() {
+        let json = """
+        {"tag_name": "v0.2.0", "html_url": "https://github.com/ProteinR/MXCtl/releases/tag/v0.2.0",
+         "draft": false, "prerelease": false,
+         "assets": [{"name": "MXCtl-0.2.0.dmg", "browser_download_url": "https://example.com/a.dmg"},
+                    {"name": "MXCtl-0.2.0.zip", "browser_download_url": "https://example.com/a.zip",
+                     "digest": "sha256:abc"}]}
+        """
+        let release = Updater.parseRelease(Data(json.utf8))
+        XCTAssertEqual(release?.version, "0.2.0")
+        XCTAssertEqual(release?.archive.absoluteString, "https://example.com/a.zip")
+        XCTAssertEqual(release?.digest, "sha256:abc")
+        let prerelease = json.replacingOccurrences(of: "\"prerelease\": false", with: "\"prerelease\": true")
+        XCTAssertNil(Updater.parseRelease(Data(prerelease.utf8)))
+        let noZip = json.replacingOccurrences(of: ".zip", with: ".tar")
+        XCTAssertNil(Updater.parseRelease(Data(noZip.utf8)))
+    }
+
+    func testVersionOrder() {
+        XCTAssertTrue(Updater.isNewer("0.1.27", than: "0.1.26"))
+        XCTAssertTrue(Updater.isNewer("0.2", than: "0.1.99"))
+        XCTAssertTrue(Updater.isNewer("v1.0.0", than: "0.9"))
+        XCTAssertFalse(Updater.isNewer("0.1.26", than: "0.1.26"))
+        XCTAssertFalse(Updater.isNewer("0.1.9", than: "0.1.10"))
+        XCTAssertFalse(Updater.isNewer("0.1", than: "0.1.0"))
+    }
+
+    func testSkipAndSnooze() {
+        let now = Date()
+        XCTAssertTrue(Updater.isOffered("0.2.0", skipped: "", snoozed: "", snoozedUntil: .distantPast, now: now))
+        XCTAssertFalse(Updater.isOffered("0.2.0", skipped: "0.2.0", snoozed: "", snoozedUntil: .distantPast, now: now))
+        // A newer version than the skipped one is offered again.
+        XCTAssertTrue(Updater.isOffered("0.2.1", skipped: "0.2.0", snoozed: "", snoozedUntil: .distantPast, now: now))
+        XCTAssertFalse(Updater.isOffered("0.2.0", skipped: "", snoozed: "0.2.0", snoozedUntil: now + 60, now: now))
+        XCTAssertTrue(Updater.isOffered("0.2.0", skipped: "", snoozed: "0.2.0", snoozedUntil: now - 60, now: now))
+        XCTAssertTrue(Updater.isOffered("0.2.1", skipped: "", snoozed: "0.2.0", snoozedUntil: now + 60, now: now))
+    }
+
+    func testDigest() {
+        let data = Data("abc".utf8)
+        let sha = "sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        XCTAssertTrue(Updater.digestMatches(sha, data))
+        XCTAssertTrue(Updater.digestMatches(sha.uppercased().replacingOccurrences(of: "SHA256", with: "sha256"), data))
+        XCTAssertFalse(Updater.digestMatches(sha, Data("abd".utf8)))
+        XCTAssertTrue(Updater.digestMatches(nil, data))
+        XCTAssertFalse(Updater.digestMatches("md5:900150983cd24fb0", data))
+    }
+
+    func testUpdateLocation() {
+        let writable: (String) -> Bool = { _ in true }
+        XCTAssertFalse(Updater.locationBlocks(URL(fileURLWithPath: "/Applications/MXCtl.app"), writable: writable))
+        XCTAssertTrue(Updater.locationBlocks(URL(fileURLWithPath: "/Volumes/MXCtl 0.2.0/MXCtl.app"), writable: writable))
+        XCTAssertTrue(Updater.locationBlocks(URL(fileURLWithPath: "/private/var/folders/x/AppTranslocation/1/d/MXCtl.app"), writable: writable))
+        XCTAssertTrue(Updater.locationBlocks(URL(fileURLWithPath: "/Applications/MXCtl.app"), writable: { _ in false }))
+    }
 }

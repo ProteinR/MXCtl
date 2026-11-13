@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import SwiftUI
+import UserNotifications
 
 @main
 struct MXCtlApp: App {
@@ -39,8 +40,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settings.target = self
             let report = NSMenuItem(title: String(localized: "Сообщить об ошибке…"), action: #selector(AppDelegate.reportBug), keyEquivalent: "")
             report.target = self
-            return [settings, report]
+            let update = NSMenuItem(title: String(localized: "Проверить обновления…"), action: #selector(AppDelegate.checkForUpdates), keyEquivalent: "")
+            update.target = self
+            return [settings, update, report]
         }
+        Updater.shared.showPanel = { [weak self] in self?.statusItem?.showPanel() }
+        // The delegate is set at launch too, so a click on a notification from before a restart works.
+        UNUserNotificationCenter.current().delegate = ForegroundPresenter.shared
+        Updater.shared.start()
 
         let permissions = Permissions.shared
         permissions.onChange = {
@@ -79,9 +86,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
-        // `--open-settings [mouse]`: for screenshots of the settings window.
+        // `--open-settings [mouse | general]`: for screenshots of the settings window.
         if CommandLine.arguments.contains("--open-settings") {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { SettingsWindow.shared.show() }
+            let general = CommandLine.arguments.contains("general")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { SettingsWindow.shared.show(tab: general ? "Общие" : nil) }  // no-l10n
         }
         // `--bug-report`: the bug report window, for screenshots.
         if CommandLine.arguments.contains("--bug-report") {
@@ -169,6 +177,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @MainActor @objc func openSettings() {
         SettingsWindow.shared.show()
+    }
+
+    /// Checks at once and shows the result in Общие → Обновления.
+    @MainActor @objc func checkForUpdates() {
+        SettingsWindow.shared.show(tab: "Общие")  // no-l10n
+        Task { await Updater.shared.check(userInitiated: true) }
     }
 
     @MainActor @objc func reportBug() {

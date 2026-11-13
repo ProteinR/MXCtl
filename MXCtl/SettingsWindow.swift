@@ -683,6 +683,7 @@ private struct GeneralTab: View {
                 LoginItemToggle()
                 MenuBarIconToggle()
             }
+            UpdateSettings()
             Section("Файл настроек") {
                 Text(ConfigStore.fileURL.path)
                     .font(.caption.monospaced()).textSelection(.enabled)

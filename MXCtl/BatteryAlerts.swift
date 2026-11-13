@@ -48,8 +48,9 @@ enum BatteryAlerts {
         level == .critical ? String(localized: "Скоро выключится — поставьте на зарядку.") : String(localized: "Пора зарядить.")
     }
 
-    /// `level` picks the battery picture (scripts/make-battery.swift).
-    static func notify(title: String, body: String, level: BatteryAlertRule.Level = .warning) {
+    /// `level` picks the battery picture (scripts/make-battery.swift); nil posts none. A fixed
+    /// `identifier` replaces the previous notification with it (updates).
+    static func notify(title: String, body: String, level: BatteryAlertRule.Level? = .warning, identifier: String? = nil) {
         let center = UNUserNotificationCenter.current()
         center.delegate = ForegroundPresenter.shared
         center.requestAuthorization(options: [.alert, .sound]) { granted, error in
@@ -61,8 +62,8 @@ enum BatteryAlerts {
             content.title = title
             content.body = body
             content.sound = .default
-            if let attachment = picture(level) { content.attachments = [attachment] }
-            center.add(UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)) { error in
+            if let level, let attachment = picture(level) { content.attachments = [attachment] }
+            center.add(UNNotificationRequest(identifier: identifier ?? UUID().uuidString, content: content, trigger: nil)) { error in
                 if let error {
                     Log.error("Notification failed: \(Log.describe(error))", "battery")
                 } else {
@@ -95,5 +96,14 @@ final class ForegroundPresenter: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .list, .sound])
+    }
+
+    /// A click on the update notification opens the panel with the update banner.
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.notification.request.identifier == Updater.notificationID {
+            DispatchQueue.main.async { MainActor.assumeIsolated { Updater.shared.showPanel?() } }
+        }
+        completionHandler()
     }
 }

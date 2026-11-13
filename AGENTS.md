@@ -51,6 +51,28 @@ key combination, macOS function, media key, open app, URL (own apps' schemes, `s
 Shortcuts command, shell command. "Определить клавишу" diverts everything until a press and
 names it. Config: `~/Library/Application Support/MXCtl/config.json` (hand-editable, "Перечитать").
 
+## Updates and releases
+
+`Updater.swift` (MeetRec's scheme): GitHub `releases/latest` a minute after launch and every 6 h
+(`checkForUpdates`, last check kept in `lastUpdateCheck`). A newer one: banner in the panel
+(`UpdateBanner`: Обновить · Позже = hidden 24 h, `snoozedUpdateVersion/Until` · Пропустить =
+`skippedUpdateVersion`, a newer one shows again) and one notification per version
+(`notifiedUpdateVersion`, click opens the panel). Общие → Обновления (`UpdateSettings`): check
+automatically, install automatically (`installUpdatesAutomatically`, off; waits for 2 min of no
+input), "Проверить сейчас" (also "Проверить обновления…" in the icon's menu), which clears skip and
+snooze for the found version. Install: `.zip` next to the app, SHA-256 against the asset's GitHub
+`digest`, bundle id, version, newer, designated requirement of the running copy (same
+certificate, so Accessibility / Input Monitoring stay), swap in place, quit, a shell reopens it.
+Only a copy signed "MXCtl Release Signing" self-updates; `install.sh` builds say so.
+
+Releases: `.github/workflows/release.yml` on a tag `vX.Y.Z` (= `MARKETING_VERSION`) or by hand:
+`scripts/test.sh`, `check-strings.py`, then `scripts/make-release.sh` (universal arm64 + x86_64,
+`.dmg` + `.zip` + `SHA256SUMS`), signed with the secrets `MXCTL_CERT_P12` (base64 .p12) and
+`MXCTL_CERT_PASSWORD`; notes = commits since the previous tag + `.github/release-notes.md`. The
+certificate must never change (it is what keeps users' permissions); the .p12 (created 2026-11-13, valid
+to 2046) is in `../MXCtl-release-signing/` (its README), the password in the login Keychain
+("MXCtl Release Signing p12 password"); never commit or push either.
+
 ## Battery and journal
 
 `EventJournal.swift` keeps `~/Library/Application Support/MXCtl/events.jsonl` (a year): Mac
